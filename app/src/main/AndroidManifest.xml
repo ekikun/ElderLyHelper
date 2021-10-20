@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.eki.elderlyhelper">
+
+  <!--  &lt;!&ndash;连接网络权限，用于执行云端语音能力 &ndash;&gt;
+    <uses-permission android:name="android.permission.INTERNET"/>
+    &lt;!&ndash;获取手机录音机使用权限，听写、识别、语义理解需要用到此权限 &ndash;&gt;
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    &lt;!&ndash;读取网络信息状态 &ndash;&gt;
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    &lt;!&ndash;获取当前wifi状态 &ndash;&gt;
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    &lt;!&ndash;允许程序改变网络连接状态 &ndash;&gt;
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
+    &lt;!&ndash;读取手机信息权限 &ndash;&gt;
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    &lt;!&ndash;外存储写权限，构建语法需要用到此权限 &ndash;&gt;
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    &lt;!&ndash;外存储读权限，构建语法需要用到此权限 &ndash;&gt;
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    &lt;!&ndash;定位信息是敏感信息，可通过Setting.setLocationEnable(false)关闭定位请求 &ndash;&gt;
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    &lt;!&ndash;如需使用人脸识别，还要添加：摄像头权限，拍照需要用到 &ndash;&gt;
+    <uses-permission android:name="android.permission.CAMERA" />-->
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+
+
+    <application
+        android:name=".MainApp"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.ElderLyHelper"
+        tools:replace="android:theme">
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

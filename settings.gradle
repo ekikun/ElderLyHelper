@@ -1,0 +1,4 @@
+include ':common'
+include ':magnifier'
+include ':app'
+rootProject.name = "ElderLyHelper"

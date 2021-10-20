@@ -1,0 +1,33 @@
+apply plugin: 'com.android.library'
+apply from:'../dependencies.gradle'
+
+android {
+    sourceSets {
+        main {
+            // 这句话的意思是，jniLibs 下的so库，直接映射到libs目录下
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+}
+
+repositories{
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+
+
+dependencies {
+
+    api (name:'ocrsdk', ext:'aar')
+
+    api files('libs/Msc.jar')
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation 'androidx.core:core-ktx:1.2.0'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'com.google.android.material:material:1.1.0'
+    testImplementation 'junit:junit:4.+'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+}
