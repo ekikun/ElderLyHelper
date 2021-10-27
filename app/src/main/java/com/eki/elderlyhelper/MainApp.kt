@@ -43,10 +43,9 @@ class MainApp:Application(){
     }
 
     fun initArouter(){
+        ARouter.openLog()
+        ARouter.openDebug()
         ARouter.init(this)
-        if (BuildConfig.DEBUG){
-            ARouter.openLog()
-            ARouter.openDebug()
-        }
+
     }
 }

@@ -17,7 +17,6 @@ android {
             arguments {
                 arg("AROUTER_MODULE_NAME", project.getName())
             }
-
         }
 
     }
@@ -44,6 +43,9 @@ android {
         jvmTarget = '1.8'
     }
 }
+
+
+
 
 dependencies {
     def nav_version = "2.3.5"

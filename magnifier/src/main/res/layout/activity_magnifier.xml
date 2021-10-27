@@ -12,14 +12,47 @@
         android:layout_height="match_parent"
         tools:context=".ui.MagnifierActivity">
 
-        <TextView
+
+        <!--title的值在代码中动态的设定-->
+        <include
+            android:id="@+id/toolbar_magnifier"
+            layout="@layout/common_toolbar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <androidx.camera.view.PreviewView
+            android:id="@+id/previewView"
+            android:rotation="0"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@+id/guideline"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/toolbar_magnifier" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Hello World!"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.9"/>
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_control"
+            android:layout_width="210dp"
+            app:cornerRadius="40dp"
+            android:text="@string/button_text"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:backgroundTint="@color/dodgerblue"
+            android:layout_height="50dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/previewView" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">common</string>
+    <string name="button_text">语音控制</string>
 </resources>

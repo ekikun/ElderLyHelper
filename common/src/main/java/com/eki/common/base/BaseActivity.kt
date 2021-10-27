@@ -1,5 +1,6 @@
 package com.eki.common.base
 
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -19,7 +20,7 @@ abstract class BaseActivity<T: ViewDataBinding>:AppCompatActivity(){
        if(it!=ErrorCode.SUCCESS) ToastUtils.show("初始化失败，错误码：${it}")
     }
 
-    private val mIat:SpeechRecognizer = SpeechRecognizer.createRecognizer(this, initListener)
+     val mIat:SpeechRecognizer by lazy { SpeechRecognizer.createRecognizer(this, initListener) }
 
     private val mEngineType = SpeechConstant.TYPE_CLOUD
 
@@ -39,15 +40,13 @@ abstract class BaseActivity<T: ViewDataBinding>:AppCompatActivity(){
         }
 
         override fun onResult(results: RecognizerResult?, isLast: Boolean) {
-            if (isLast) {
-                Log.d(TAG, "onResult 结束")
-            }else{
+            if (isLast){
                 execute(results)
+                Log.d(TAG, "onResult 结束")
             }
-
         }
 
-        override fun onBeginOfSpeech() {
+        override fun onBeginOfSpeech(){
             ToastUtils.show("开始说话")
         }
 
@@ -55,7 +54,7 @@ abstract class BaseActivity<T: ViewDataBinding>:AppCompatActivity(){
 
         }
 
-        override fun onEndOfSpeech() {
+        override fun onEndOfSpeech(){
             ToastUtils.show("结束说话")
         }
 
@@ -110,6 +109,8 @@ abstract class BaseActivity<T: ViewDataBinding>:AppCompatActivity(){
 
     abstract fun getLayoutId():Int
 
+    abstract fun requestPermission()
+
     protected  open fun executeListening(){
         setParams() // 每次都重新设置参数
         val resultCode = mIat.startListening(mRecognizerListener)
@@ -117,4 +118,5 @@ abstract class BaseActivity<T: ViewDataBinding>:AppCompatActivity(){
             ToastUtils.show("识别命令失败")
         }
     }
+
 }
