@@ -1,22 +1,16 @@
 package com.eki.magnifier.ui
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.icu.text.SimpleDateFormat
-import android.media.MediaScannerConnection
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.webkit.MimeTypeMap
+import android.view.View
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
-import androidx.core.net.toFile
-import androidx.lifecycle.LiveData
+import androidx.fragment.app.DialogFragment
 import androidx.window.WindowManager
 import com.alibaba.android.arouter.facade.annotation.Route
 import com.eki.common.base.BaseActivity
@@ -26,12 +20,7 @@ import com.eki.magnifier.R
 import com.eki.magnifier.databinding.ActivityMagnifierBinding
 import com.eki.magnifier.viewmodel.MagnifierViewModel
 import com.iflytek.cloud.RecognizerResult
-import okhttp3.internal.indexOf
 
-import java.io.File
-import java.util.*
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import kotlin.math.*
 
 
@@ -53,8 +42,6 @@ class MagnifierActivity : BaseActivity<ActivityMagnifierBinding>() {
     private val mViewModel:MagnifierViewModel by viewModels<MagnifierViewModel>()
 
 
-    private lateinit var outputDirectory: File
-    private  var cameraExecutor: ExecutorService =  Executors.newSingleThreadExecutor()
 
     private val windowManager:WindowManager = WindowManager(this)
 
@@ -63,14 +50,13 @@ class MagnifierActivity : BaseActivity<ActivityMagnifierBinding>() {
     // camera Uses cases
     private lateinit var imageCapture:ImageCapture
     private lateinit var preview:Preview
-    private lateinit var imageAnalyzer:ImageAnalysis
     private  var cameraProvider:ProcessCameraProvider? = null
     private  var lensFacing = CameraSelector.LENS_FACING_BACK // 好像是用来定义前后置的？
     private lateinit var mCameraInfo:CameraInfo
     private lateinit var mCameraControl:CameraControl
     private var linearZoom = 0f
 
-
+    private var helperText:String? = null
 
     override fun onDestroy() {
         super.onDestroy()
@@ -78,11 +64,12 @@ class MagnifierActivity : BaseActivity<ActivityMagnifierBinding>() {
     }
 
     override fun initData(savedInstanceState: Bundle?) {
+        helpDialogFragment.show(supportFragmentManager, "missiles")
         requestPermission()
         setupCamera()
         mBinding?.run {
             btnControl.setOnClickListener {
-                mIat.startListening(mRecognizerListener)
+                mIat.startListening(mIatRecognizerListener)
             }
         }
         mViewModel.orderLiveData.observe(this, {
@@ -95,7 +82,7 @@ class MagnifierActivity : BaseActivity<ActivityMagnifierBinding>() {
         })
     }
 
-    override fun execute(results: RecognizerResult?){
+    override fun executeOrder(results: RecognizerResult?){
         val order = mViewModel.encodeOrder(results)
         mViewModel.orderLiveData.postValue(order)
     }
@@ -211,8 +198,6 @@ class MagnifierActivity : BaseActivity<ActivityMagnifierBinding>() {
     }
 
 
-
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>, grantResults: IntArray
@@ -244,5 +229,18 @@ class MagnifierActivity : BaseActivity<ActivityMagnifierBinding>() {
     }
 
 
+    override fun onDialogNegativeClick(dialog: DialogFragment) {
+        stopSpeaking()
+    }
+
+    override fun getDialogView():View{
+        return layoutInflater.inflate(R.layout.helperdialog_layout,null).apply {
+            val textView = this.findViewById<TextView>(R.id.text_helper)
+            helperText = resources.getString(R.string.helper_text_magnifier).replace('$', ' ')
+                    .replace('%', '\n')
+            textView.text = helperText
+            startSpeaking(helperText!!)
+        }
+    }
 
 }

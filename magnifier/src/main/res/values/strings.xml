@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">magnifier</string>
+    <string name="helper_text_magnifier">
+        $请使用语音控制:%
+        放大请说：放大%
+        缩小请说：缩小%
+        返回主菜单请说：返回
+    </string>
 </resources>

@@ -4,23 +4,7 @@
     package="com.eki.elderlyhelper">
 
 
-   <!-- <uses-permission android:name="android.permission.INTERNET"/>
-    &lt;!&ndash;获取手机录音机使用权限，听写、识别、语义理解需要用到此权限 &ndash;&gt;
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    &lt;!&ndash;读取网络信息状态 &ndash;&gt;
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    &lt;!&ndash;获取当前wifi状态 &ndash;&gt;
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    &lt;!&ndash;允许程序改变网络连接状态 &ndash;&gt;
-    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
-    &lt;!&ndash;读取手机信息权限 &ndash;&gt;
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
-    &lt;!&ndash;外存储写权限，构建语法需要用到此权限 &ndash;&gt;
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    &lt;!&ndash;外存储读权限，构建语法需要用到此权限 &ndash;&gt;
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    &lt;!&ndash;定位信息是敏感信息，可通过Setting.setLocationEnable(false)关闭定位请求 &ndash;&gt;
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>-->
+
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
