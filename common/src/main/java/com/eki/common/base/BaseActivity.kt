@@ -5,9 +5,14 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
+import androidx.fragment.app.DialogFragment
+import com.eki.common.R
+import com.eki.common.utils.JsonParser
 import com.eki.common.utils.ToastUtils
 import com.eki.common.widget.HelpDialogFragment
 import com.iflytek.cloud.*
+import com.iflytek.cloud.ui.RecognizerDialog
+import com.iflytek.cloud.ui.RecognizerDialogListener
 
 
 abstract class BaseActivity<T : ViewDataBinding>:AppCompatActivity(), HelpDialogFragment.NoticeDialogListener, HelpDialogFragment.DialogViewGetter{
@@ -20,12 +25,14 @@ abstract class BaseActivity<T : ViewDataBinding>:AppCompatActivity(), HelpDialog
     val initIatListener: InitListener = InitListener{
        if(it!=ErrorCode.SUCCESS) ToastUtils.show("初始化失败，错误码：${it}")
     }
+
+
     val mIat:SpeechRecognizer by lazy { SpeechRecognizer.createRecognizer(this, initIatListener) }
     private val mEngineType = SpeechConstant.TYPE_CLOUD
     private val mIatresultType = "json"
     private val mIatlanguageType = "zh_cn"
-    private val iat_vad_bos = "4000"
-    private val iat_vad_eos = "2000"
+    private val iat_vad_bos = "20003"
+    private val iat_vad_eos = "800"
     private val iat_asr_ptt = "0"
     val mIatRecognizerListener: RecognizerListener = object:RecognizerListener{
         override fun onVolumeChanged(p0: Int, p1: ByteArray?) {
@@ -34,7 +41,7 @@ abstract class BaseActivity<T : ViewDataBinding>:AppCompatActivity(), HelpDialog
 
         override fun onResult(results: RecognizerResult?, isLast: Boolean) {
             if (isLast){
-                executeOrder(results)
+                executeAfterListening(results)
                 Log.d(TAG, "onResult 结束")
             }
         }
@@ -62,6 +69,8 @@ abstract class BaseActivity<T : ViewDataBinding>:AppCompatActivity(), HelpDialog
     }
     val mTts by lazy { SpeechSynthesizer.createSynthesizer(this, initIatListener) }
     val speaker = "xiaoyan"
+
+
 
     // 缓冲进度
     private var mPercentForBuffering = 0
@@ -109,9 +118,8 @@ abstract class BaseActivity<T : ViewDataBinding>:AppCompatActivity(), HelpDialog
     }
 
 
-
-
     fun setIatParams(){
+
         mIat.setParameter(SpeechConstant.PARAMS, null)
         // 引擎类型
         mIat.setParameter(SpeechConstant.ENGINE_TYPE, mEngineType)
@@ -169,13 +177,14 @@ abstract class BaseActivity<T : ViewDataBinding>:AppCompatActivity(), HelpDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.setStatusBarColor(getColor(R.color.white))
         mBinding =  DataBindingUtil.setContentView(this, getLayoutId())
         initData(savedInstanceState)
     }
 
     abstract fun initData(savedInstanceState: Bundle?)
 
-    abstract fun executeOrder(results: RecognizerResult?)
+    abstract fun executeAfterListening(results: RecognizerResult?)
 
     abstract fun getLayoutId():Int
 
@@ -185,7 +194,7 @@ abstract class BaseActivity<T : ViewDataBinding>:AppCompatActivity(), HelpDialog
         setIatParams() // 每次都重新设置参数
         val resultCode = mIat.startListening(mIatRecognizerListener)
         if(resultCode!=ErrorCode.SUCCESS){
-            ToastUtils.show("识别命令失败")
+            ToastUtils.show("语音合成失败")
         }
     }
 
@@ -201,6 +210,9 @@ abstract class BaseActivity<T : ViewDataBinding>:AppCompatActivity(), HelpDialog
         mTts.stopSpeaking()
     }
 
+    protected fun stopListening(){
+        mIat.stopListening()
+    }
 
 
 }

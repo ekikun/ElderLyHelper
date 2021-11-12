@@ -1,3 +1,6 @@
+include ':ocr_ui'
+include ':textocr'
+include ':schedule'
 include ':common'
 include ':magnifier'
 include ':app'

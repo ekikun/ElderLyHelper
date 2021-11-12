@@ -15,6 +15,9 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/common" />
             <option value="$PROJECT_DIR$/magnifier" />
+            <option value="$PROJECT_DIR$/ocr_ui" />
+            <option value="$PROJECT_DIR$/schedule" />
+            <option value="$PROJECT_DIR$/textocr" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

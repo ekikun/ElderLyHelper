@@ -15,18 +15,20 @@ import androidx.window.WindowManager
 import com.alibaba.android.arouter.facade.annotation.Route
 import com.eki.common.base.BaseActivity
 import com.eki.common.utils.AppHelper
+import com.eki.common.utils.Constant
 import com.eki.common.utils.ToastUtils
 import com.eki.magnifier.R
 import com.eki.magnifier.databinding.ActivityMagnifierBinding
 import com.eki.magnifier.viewmodel.MagnifierViewModel
 import com.iflytek.cloud.RecognizerResult
+import kotlinx.android.synthetic.main.activity_magnifier.*
 
 import kotlin.math.*
 
 
 
 
-@Route(path = "/magnifier/MagnifierActivity")
+@Route(path = Constant.ROUTER_MAGNIFIER)
 class MagnifierActivity : BaseActivity<ActivityMagnifierBinding>() {
 
     // 权限码
@@ -68,9 +70,11 @@ class MagnifierActivity : BaseActivity<ActivityMagnifierBinding>() {
         requestPermission()
         setupCamera()
         mBinding?.run {
+            toolbarMagnifier?.tvTitle.text ="放大镜"
             btnControl.setOnClickListener {
                 mIat.startListening(mIatRecognizerListener)
             }
+
         }
         mViewModel.orderLiveData.observe(this, {
             when(it){
@@ -80,9 +84,10 @@ class MagnifierActivity : BaseActivity<ActivityMagnifierBinding>() {
                 "不匹配"-> ToastUtils.show("无效命令,请重新输入")
             }
         })
+
     }
 
-    override fun executeOrder(results: RecognizerResult?){
+    override fun executeAfterListening(results: RecognizerResult?){
         val order = mViewModel.encodeOrder(results)
         mViewModel.orderLiveData.postValue(order)
     }
