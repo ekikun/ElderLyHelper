@@ -1,0 +1,33 @@
+if (!isSingleModule.toBoolean()) {
+    apply plugin: 'com.android.library'
+} else {
+    apply plugin: 'com.android.application'
+}
+apply from:'../dependencies.gradle'
+apply plugin: 'kotlin-android'
+
+android {
+    sourceSets{
+        main {
+            if (!isSingleModule.toBoolean()) {
+                //如果是library，则编译manifest下AndroidManifest.xml
+                manifest.srcFile 'src/main/AndroidManifest.xml'
+            } else {
+                //如果是application，则编译主目录下AndroidManifest.xml
+                manifest.srcFile 'src/main/manifest/AndroidManifest.xml'
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation project(path: ':common')
+
+    implementation 'androidx.activity:activity:1.2.0-beta01'
+    implementation 'androidx.fragment:fragment:1.3.0-beta01'
+
+
+    //为了防止不必要的依赖冲突，0.0.3开始需要自行依赖google material库
+    //查看最新版本请前往github，仅支持androidx
+    implementation 'com.github.loperSeven:DateTimePicker:0.4.1'
+}

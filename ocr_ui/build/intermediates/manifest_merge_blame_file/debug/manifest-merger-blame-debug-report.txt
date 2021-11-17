@@ -1,0 +1,66 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<!--   ~ Copyright (C) 2017 Baidu, Inc. All Rights Reserved. -->
+3<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+4    package="com.baidu.ocr.ui"
+5    android:versionCode="1"
+6    android:versionName="1.0" >
+7
+8    <uses-sdk
+9        android:minSdkVersion="14"
+9-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml
+10        android:targetSdkVersion="27" />
+10-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml
+11
+12    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+12-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:7:5-79
+12-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:7:22-77
+13    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+13-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:8:5-80
+13-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:8:22-78
+14    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+14-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:7:5-79
+14-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:7:22-77
+15
+16    <uses-feature android:name="android.hardware.camera.any" />
+16-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:10:5-64
+16-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:10:19-61
+17
+18    <uses-permission android:name="android.permission.CAMERA" />
+18-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:11:5-65
+18-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:11:22-62
+19
+20    <uses-feature android:name="android.hardware.camera2.full" />
+20-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:12:5-65
+20-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:12:19-63
+21    <uses-feature android:name="android.hardware.camera" />
+21-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:13:5-59
+21-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:13:19-57
+22    <uses-feature android:name="android.hardware.camera.autofocus" />
+22-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:14:5-70
+22-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:14:19-67
+23
+24    <application
+24-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:16:5-27:19
+25        android:allowBackup="true"
+25-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:16:18-44
+26        android:icon="@mipmap/ic_launcher"
+26-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:18:18-52
+27        android:label="@string/app_name"
+27-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:17:18-50
+28        android:supportsRtl="true"
+28-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:19:18-44
+29        android:theme="@style/AppTheme"
+29-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:21:18-49
+30        android:vmSafeMode="true" >
+30-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:20:18-43
+31        <activity
+31-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:23:9-25:85
+32            android:name="com.baidu.ocr.ui.camera.CameraActivity"
+32-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:23:19-72
+33            android:configChanges="screenSize|orientation"
+33-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:24:19-65
+34            android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" />
+34-->E:\AndroidProjects\ElderLyHelper\ocr_ui\src\main\AndroidManifest.xml:25:19-83
+35    </application>
+36
+37</manifest>

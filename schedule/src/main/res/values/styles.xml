@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="dialogstyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@drawable/bottomsheetshape</item>
+        <item name="android:windowSoftInputMode">stateAlwaysVisible</item>
+    </style>
+    <style name="bottomSheetDialog" parent="Theme.Design.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/dialogstyle</item>
+        <item name="android:windowSoftInputMode">stateAlwaysVisible</item>
+        <item name="android:windowIsFloating">false</item>
+    </style>
+    <style name="MyCheckBox"  parent="Theme.AppCompat.Light">
+        <item name="colorControlActivated">@color/gray</item>
+    </style>
+</resources>

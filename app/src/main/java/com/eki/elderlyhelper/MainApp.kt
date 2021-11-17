@@ -46,6 +46,5 @@ class MainApp:Application(){
         ARouter.openLog()
         ARouter.openDebug()
         ARouter.init(this)
-
     }
 }

@@ -36,5 +36,6 @@ dependencies {
     if(!isSingleModule.toBoolean()){
         implementation project(path: ':magnifier')
         implementation project(path: ':schedule')
+        implementation project(path: ':textocr')
     }
 }

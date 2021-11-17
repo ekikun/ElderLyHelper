@@ -29,6 +29,11 @@ class MainActivity : AppCompatActivity() {
             ARouter.getInstance().build(Constant.ROUTER_SCHEDULE)
                 .navigation()
         }
+        val btn_ocr:Button = findViewById(R.id.btn_ocr)
+        btn_ocr.setOnClickListener {
+            ARouter.getInstance().build(Constant.ROUTER_OCR)
+                .navigation()
+        }
     }
 
 

@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">schedule</string>
+    <string name="helper_text_schedule">
+        语音控制提示:%
+        添加请说：语音添加%
+        删除某一项请说：删除第某个
+    </string>
+    <string name="helper_text_lat">
+        语音控制提示:%
+        点击两次说按钮, 第一次说: %
+        今天/明天/后天/几月几日, 上午/下午/晚上$几点几分$重复/不重复%
+        第二次说:%
+        计划做的事情,$例如吃药%
+        (目前仅支持每天重复)
+    </string>
+</resources>

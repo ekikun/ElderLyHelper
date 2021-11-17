@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/b"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:backgroundTint="@color/whitesmoke"
@@ -29,4 +30,13 @@
         app:layout_constraintStart_toEndOf="@+id/btn_magnifier"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.499" />
+
+    <Button
+        android:id="@+id/btn_ocr"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="72dp"
+        android:text="拍照识字"
+        app:layout_constraintTop_toBottomOf="@+id/btn_magnifier"
+        tools:layout_editor_absoluteX="88dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

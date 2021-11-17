@@ -1,0 +1,16 @@
+if (!isSingleModule.toBoolean()) {
+    apply plugin: 'com.android.library'
+} else {
+    apply plugin: 'com.android.application'
+}
+apply from:'../dependencies.gradle'
+apply plugin: 'kotlin-android'
+
+android {
+
+}
+
+dependencies {
+    implementation project(path: ':common')
+    implementation project(path: ':ocr_ui')
+}
