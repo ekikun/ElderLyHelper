@@ -25,35 +25,34 @@ import kotlinx.android.synthetic.main.activity_magnifier.*
 
 import kotlin.math.*
 
-
-
-
+/**
+ * 放大镜Activity
+ * @property mViewModel MagnifierViewModel
+ * @property windowManager WindowManager
+ * @property camera Camera
+ * @property imageCapture ImageCapture
+ * @property preview Preview
+ * @property cameraProvider ProcessCameraProvider?
+ * @property lensFacing Int
+ * @property mCameraInfo CameraInfo
+ * @property mCameraControl CameraControl
+ * @property linearZoom Float
+ * @property helperText String?
+ */
 @Route(path = Constant.ROUTER_MAGNIFIER)
 class MagnifierActivity : BaseActivity<ActivityMagnifierBinding>() {
 
-    // 权限码
-    private val REQUEST_CODE_CAMERA = 1001
-    private val REQUEST_CODE_RECORD_AUDIO = 1002
-
-
-    // 权限列表
-    private val permissions:Array<String> = arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
-    private val permissionCodes:Array<Int> = arrayOf(REQUEST_CODE_CAMERA, REQUEST_CODE_RECORD_AUDIO)
-    private var checkPermission:Boolean = false
-
     private val mViewModel:MagnifierViewModel by viewModels<MagnifierViewModel>()
-
-
 
     private val windowManager:WindowManager = WindowManager(this)
 
     private lateinit var camera:Camera
 
-    // camera Uses cases
+    // 相机相关参数
     private lateinit var imageCapture:ImageCapture
     private lateinit var preview:Preview
     private  var cameraProvider:ProcessCameraProvider? = null
-    private  var lensFacing = CameraSelector.LENS_FACING_BACK // 好像是用来定义前后置的？
+    private  var lensFacing = CameraSelector.LENS_FACING_BACK // 用来定义前后置的
     private lateinit var mCameraInfo:CameraInfo
     private lateinit var mCameraControl:CameraControl
     private var linearZoom = 0f
@@ -66,6 +65,7 @@ class MagnifierActivity : BaseActivity<ActivityMagnifierBinding>() {
     }
 
     override fun initData(savedInstanceState: Bundle?) {
+        initTitle()
         helpDialogFragment.show(supportFragmentManager, "missiles")
         requestPermission()
         setupCamera()
@@ -81,10 +81,12 @@ class MagnifierActivity : BaseActivity<ActivityMagnifierBinding>() {
                 "大"-> setLinearZoomUp()
                 "小"-> setLinerZoomDown()
                 "返回"-> finish()
-                "不匹配"-> ToastUtils.show("无效命令,请重新输入")
+                "不匹配"-> {
+                    ToastUtils.show("无效命令,请重新读")
+                    startSpeaking("无效命令，请重新读")
+                }
             }
         })
-
     }
 
     override fun executeAfterListening(results: RecognizerResult?){
@@ -121,8 +123,6 @@ class MagnifierActivity : BaseActivity<ActivityMagnifierBinding>() {
         val screenAspectRatio = aspectRatio(metrics.width(), metrics.height())
         Log.d(TAG, "Preview aspect ratio: $screenAspectRatio")
 
-
-
         // CameraProvider
         val cameraProvider = cameraProvider ?: throw IllegalStateException("Camera initialization failed.")
 
@@ -152,6 +152,12 @@ class MagnifierActivity : BaseActivity<ActivityMagnifierBinding>() {
     }
 
 
+    /**
+     * 设置屏幕分辨率
+     * @param width Int
+     * @param height Int
+     * @return Int
+     */
     private fun aspectRatio(width: Int, height: Int): Int{
         val previewRatio = max(width, height).toDouble() / min(width, height)
         if (abs(previewRatio - RATIO_4_3_VALUE) <= abs(previewRatio - RATIO_16_9_VALUE)) {
@@ -179,64 +185,6 @@ class MagnifierActivity : BaseActivity<ActivityMagnifierBinding>() {
         Log.d(TAG, "$linearZoom")
     }
 
-    override fun requestPermission() {
-        for(i in 0..permissions.size-1){
-            when {
-                ContextCompat.checkSelfPermission(
-                        AppHelper.mContext,
-                        permissions[i]
-                ) == PackageManager.PERMISSION_GRANTED -> {
-                   if(i==permissions.size-1) setupCamera()
-                }
-                shouldShowRequestPermissionRationale("") -> {
-
-                }
-                else -> {
-                    requestPermissions(
-                            arrayOf(permissions[i]),
-                            permissionCodes[i]
-                    )
-                }
-            }
-        }
-
-    }
-
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>, grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            REQUEST_CODE_CAMERA -> {
-                // If request is cancelled, the result arrays are empty.
-                if ((grantResults.isNotEmpty() &&
-                            grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                ) {
-                    checkPermission = true
-                } else {
-                   ToastUtils.show("拒绝了授权")
-                }
-                return
-            }
-            REQUEST_CODE_RECORD_AUDIO -> {
-                if ((grantResults.isNotEmpty() &&
-                                grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                ) {
-                    if(checkPermission) setupCamera()
-                } else {
-                    ToastUtils.show("拒绝了授权")
-                }
-                return
-            }
-        }
-    }
-
-
-    override fun onDialogNegativeClick(dialog: DialogFragment) {
-        stopSpeaking()
-    }
 
     override fun getDialogView():View{
         return layoutInflater.inflate(R.layout.helperdialog_layout,null).apply {
@@ -248,4 +196,15 @@ class MagnifierActivity : BaseActivity<ActivityMagnifierBinding>() {
         }
     }
 
+    override fun executeAfrPermitted() {
+        setupCamera()
+    }
+
+    override fun initTitle() {
+        mBinding?.run {
+            toolbarMagnifier.tvTitle.text = "放大镜"
+            setSupportActionBar(toolbarMagnifier.toolbar)
+            toolbarMagnifier.toolbar.inflateMenu(R.menu.common_menu)
+        }
+    }
 }

@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">长者小帮手</string>
+    <string name="helper_text_main">
+        $请使用语音控制:%
+        使用放大镜请说：放大镜%
+        使用小秘书请说：小秘书%
+        使用文字识别阅读请说：扫描阅读或者文字识别%
+        功能介绍: 为您语音播报本app功能%
+        返回主菜单请说：返回
+    </string>
+    <string name="function_brief">
+        放大镜功能: 可以用语音控制相机放大缩小作为放大镜
+        小秘书功能: 可以添加日程，设置闹钟发送提醒
+        扫描阅读功能: 可以扫描报纸书籍片段，app提供语音阅读
+    </string>
 </resources>

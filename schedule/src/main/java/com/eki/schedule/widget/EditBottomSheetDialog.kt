@@ -11,7 +11,6 @@ import com.eki.schedule.databinding.EditBottomsheetLayoutBinding
 import com.eki.schedule.entity.ScheduleEntity
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import android.text.format.DateFormat
 import androidx.databinding.DataBindingUtil
@@ -24,7 +23,7 @@ class EditBottomDialog(context: Context): BottomSheetDialogFragment(){
 
     private var mDialog:BottomSheetDialog?=null
 
-    private var listener:setListener? = null
+    private var listener:editListener? = null
 
     private var mBinding:EditBottomsheetLayoutBinding? = null
 
@@ -42,7 +41,7 @@ class EditBottomDialog(context: Context): BottomSheetDialogFragment(){
 
     val timeLiveData:MutableLiveData<Long> = MutableLiveData()
 
-    interface setListener{
+    interface editListener{
         fun setTime(time: MutableLiveData<Long>)
         fun done(scheduleEntity: ScheduleEntity)
         fun editDone(scheduleEntity: ScheduleEntity)
@@ -67,7 +66,7 @@ class EditBottomDialog(context: Context): BottomSheetDialogFragment(){
     override fun onAttach(context: Context) {
         super.onAttach(context)
         try {
-            listener = context as setListener
+            listener = context as editListener
         }catch (e:Exception){
 
         }
@@ -77,6 +76,9 @@ class EditBottomDialog(context: Context): BottomSheetDialogFragment(){
         Handler().postDelayed({
             imm?.toggleSoftInput(0, InputMethodManager.SHOW_FORCED)
         }, 0,1)
+        /**
+         * 对于添加模式和选择模式对应的逻辑都是不同的, 一个生成scheduleEntity, 一个对已有的进行修改
+         */
         mBinding?.run {
             btnAlarm.setOnClickListener {
                 if(!isOnEditing){
@@ -139,6 +141,12 @@ class EditBottomDialog(context: Context): BottomSheetDialogFragment(){
         }
     }
 
+    /**
+     * 编辑模式下调用此函数打开dialog
+     * @param manager FragmentManager
+     * @param tag String
+     * @param scheduleEntity ScheduleEntity 传入被修改的日程对象
+     */
     fun editShow(manager:FragmentManager, tag:String ,scheduleEntity: ScheduleEntity){
         isOnEditing = true
         editScheduleEntity = scheduleEntity

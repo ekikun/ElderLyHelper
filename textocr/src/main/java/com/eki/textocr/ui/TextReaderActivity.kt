@@ -1,10 +1,13 @@
 package com.eki.textocr.ui
 
 import android.Manifest
-import android.bluetooth.BluetoothProfile
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.View
 import android.widget.TextView
@@ -19,13 +22,25 @@ import com.baidu.ocr.ui.camera.CameraActivity
 import com.eki.common.base.BaseActivity
 import com.eki.common.utils.AppHelper
 import com.eki.common.utils.Constant
+import com.eki.common.utils.JsonParser
 import com.eki.common.utils.ToastUtils
+import com.eki.textocr.Bean.TextBean
 import com.eki.textocr.R
 import com.eki.textocr.databinding.ActivityTextreaderBinding
 import com.eki.textocr.utils.FileUtil
 import com.eki.textocr.utils.RecognizeService
+import com.google.gson.Gson
 import com.iflytek.cloud.RecognizerResult
+import com.tencent.mmkv.MMKV
+import java.lang.StringBuilder
 
+/**
+ * 文字识别类
+ * @property kv (com.tencent.mmkv.MMKV..com.tencent.mmkv.MMKV?) 用于阅读记忆持久化
+ * @property helperText String?
+ * @property hasGotToken Boolean
+ * @property ocrTexts String?
+ */
 @Route(path = Constant.ROUTER_OCR)
 class TextReaderActivity: BaseActivity<ActivityTextreaderBinding>() {
 
@@ -33,107 +48,80 @@ class TextReaderActivity: BaseActivity<ActivityTextreaderBinding>() {
         private const val REQUEST_CODE_GENERAL_BASIC = 106
     }
 
-    // 权限码
-    private val REQUEST_CODE_CAMERA = 1001
-    private val REQUEST_CODE_RECORD_AUDIO = 1002
-
-
-    // 权限列表
-    private val permissions:Array<String> = arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
-    private val permissionCodes:Array<Int> = arrayOf(REQUEST_CODE_CAMERA, REQUEST_CODE_RECORD_AUDIO)
+    private val kv by lazy{MMKV.defaultMMKV()}
 
     private var helperText: String? = null
 
     private var hasGotToken:Boolean = false
 
+    private var ocrTexts:String?=null
+
     override fun initData(savedInstanceState: Bundle?) {
+        initTitle()
         requestPermission()
+        helpDialogFragment.show(supportFragmentManager,"OCR")
         initAccessTokenWithAkSk()
         mBinding?.run {
+            tvOcr.text = kv.decodeString(Constant.LAST_SAVE)
             btnOcr.setOnClickListener {
                if(checkTokenStatus()){
-                   val intent: Intent = Intent(
-                       this@TextReaderActivity,
-                       CameraActivity::class.java
-                   )
-                   intent.putExtra(
-                       CameraActivity.KEY_OUTPUT_FILE_PATH,
-                       FileUtil.getSaveFile(application).getAbsolutePath()
-                   )
-                   intent.putExtra(
-                       CameraActivity.KEY_CONTENT_TYPE,
-                       CameraActivity.CONTENT_TYPE_GENERAL
-                   )
-                   startActivityForResult(intent, TextReaderActivity.REQUEST_CODE_GENERAL_BASIC)
+                  startOcr()
                }
+            }
+            btnPause.setOnClickListener {
+                pauseSpeaking()
+            }
+            btnResume.setOnClickListener {
+                if(!mTts.isSpeaking){
+                    if(ocrTexts==null){
+                        ToastUtils.show("当前没有内容可以合成")
+                    }else startSpeaking(ocrTexts!!)
+                }else resumeSpeaking()
+            }
+            btnControlOcr.setOnClickListener {
+                startListening()
             }
         }
     }
 
     override fun executeAfterListening(results: RecognizerResult?) {
-
+        val text = JsonParser.parseIatResult(results?.resultString)
+        when {
+            text.contains("识别") -> {
+                startOcr()
+            }
+            text.contains("返回") -> {
+                finish()
+            }
+            text.contains("停止") -> {
+                stopSpeaking()
+            }
+            text.contains("暂停")->{
+                pauseSpeaking()
+            }
+            text.contains("恢复")->{
+                if(!mTts.isSpeaking){
+                    if(ocrTexts==null){
+                        ToastUtils.show("当前没有内容可以合成")
+                    }else startSpeaking(ocrTexts!!)
+                }else resumeSpeaking()
+            }
+            text.contains("继续")->{
+                if(!mTts.isSpeaking){
+                    if(ocrTexts==null){
+                        ToastUtils.show("当前没有内容可以合成")
+                    }else startSpeaking(ocrTexts!!)
+                }else resumeSpeaking()
+            }
+            else -> {
+                ToastUtils.show("无效命令，请重新读")
+                startSpeaking("无效命令，请重新读")
+            }
+        }
     }
 
     override fun getLayoutId(): Int = R.layout.activity_textreader
 
-    override fun requestPermission() {
-        for(i in 0..permissions.size-1){
-            when {
-                ContextCompat.checkSelfPermission(
-                    AppHelper.mContext,
-                    permissions[i]
-                ) == PackageManager.PERMISSION_GRANTED -> {
-
-
-                }
-                shouldShowRequestPermissionRationale("") -> {
-
-                }
-                else -> {
-                    requestPermissions(
-                        arrayOf(permissions[i]),
-                        permissionCodes[i]
-                    )
-                }
-            }
-        }
-
-    }
-
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>, grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            REQUEST_CODE_CAMERA -> {
-                // If request is cancelled, the result arrays are empty.
-                if ((grantResults.isNotEmpty() &&
-                            grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                ) {
-
-                } else {
-                    ToastUtils.show("拒绝了授权")
-                }
-                return
-            }
-            REQUEST_CODE_RECORD_AUDIO -> {
-                if ((grantResults.isNotEmpty() &&
-                            grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                ) {
-
-                } else {
-                    ToastUtils.show("拒绝了授权")
-                }
-                return
-            }
-        }
-    }
-
-    override fun onDialogNegativeClick(dialog: DialogFragment) {
-
-    }
 
     override fun getDialogView(): View {
         return layoutInflater.inflate(R.layout.common_helperdialog_layout, null).apply {
@@ -147,6 +135,8 @@ class TextReaderActivity: BaseActivity<ActivityTextreaderBinding>() {
     }
 
 
+
+    // 初始化ocr sdk的参数
     private fun initAccessTokenWithAkSk() {
         OCR.getInstance(this).initAccessTokenWithAkSk(object : OnResultListener<AccessToken> {
             override fun onResult(result: AccessToken) {
@@ -158,7 +148,7 @@ class TextReaderActivity: BaseActivity<ActivityTextreaderBinding>() {
                 error.printStackTrace()
                 Log.d("AK，SK方式获取token失败", "${error.message}")
             }
-        }, applicationContext, "qrPisDYU6Y5nKyvLddzoufgB", "twFjH6l69lMvyBYFpHbv4NZ7eV2NGC76")
+        }, applicationContext, kv.decodeString(Constant.BAIDU_AK), kv.decodeString(Constant.BAIDU_SK))
     }
 
     private fun checkTokenStatus():Boolean{
@@ -175,10 +165,61 @@ class TextReaderActivity: BaseActivity<ActivityTextreaderBinding>() {
 
         if (requestCode == TextReaderActivity.REQUEST_CODE_GENERAL_BASIC && resultCode == RESULT_OK) {
             RecognizeService.recognizeGeneralBasic(this,
-                FileUtil.getSaveFile(applicationContext).absolutePath
+                    FileUtil.getSaveFile(applicationContext).absolutePath
             ) {
                 Log.d(TAG, it)
+                val gson = Gson()
+                val wordsList = gson.fromJson(it,TextBean::class.java).words_result
+                val stringBuilder:StringBuilder = StringBuilder().apply {
+                    append("\n\n\n          ")
+                }
+                for(item in wordsList){
+                    stringBuilder.append("${item.words}")
+                }
+                ocrTexts = stringBuilder.toString()
+                kv.encode(Constant.LAST_SAVE, ocrTexts) // 对当前内容持久化存储，下次进入界面将显示
+                startSpeaking(ocrTexts!!)
             }
+        }
+    }
+
+
+    @SuppressLint("ResourceAsColor")
+    override fun showTtsProgress(beginPos: Int, endPos: Int){
+        super.showTtsProgress(beginPos, endPos)
+        mBinding?.tvOcr?.apply {
+            val style = SpannableStringBuilder(ocrTexts).apply {
+                setSpan(ForegroundColorSpan(R.color.red), beginPos, endPos, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+            text = style
+        }
+    }
+
+    override fun executeAfrPermitted() {
+
+    }
+
+    fun startOcr(){
+        val intent: Intent = Intent(
+                this@TextReaderActivity,
+                CameraActivity::class.java
+        )
+        intent.putExtra(
+                CameraActivity.KEY_OUTPUT_FILE_PATH,
+                FileUtil.getSaveFile(application).getAbsolutePath()
+        )
+        intent.putExtra(
+                CameraActivity.KEY_CONTENT_TYPE,
+                CameraActivity.CONTENT_TYPE_GENERAL
+        )
+        startActivityForResult(intent, TextReaderActivity.REQUEST_CODE_GENERAL_BASIC)
+    }
+
+    override fun initTitle() {
+        mBinding?.toolbarOcr?.apply {
+            tvTitle.text = "扫描阅读"
+            setSupportActionBar(toolbar)
+            toolbar.inflateMenu(R.menu.common_menu)
         }
     }
 }

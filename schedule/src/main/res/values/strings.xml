@@ -3,7 +3,8 @@
     <string name="helper_text_schedule">
         语音控制提示:%
         添加请说：语音添加%
-        删除某一项请说：删除第某个
+        删除某一项请说：删除第某个%
+        编辑请单击待办列表,手动修改
     </string>
     <string name="helper_text_lat">
         语音控制提示:%

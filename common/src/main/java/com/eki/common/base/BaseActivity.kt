@@ -1,12 +1,20 @@
 package com.eki.common.base
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
+import android.view.ContextMenu
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.DialogFragment
 import com.eki.common.R
+import com.eki.common.utils.AppHelper
 import com.eki.common.utils.JsonParser
 import com.eki.common.utils.ToastUtils
 import com.eki.common.widget.HelpDialogFragment
@@ -14,19 +22,34 @@ import com.iflytek.cloud.*
 import com.iflytek.cloud.ui.RecognizerDialog
 import com.iflytek.cloud.ui.RecognizerDialogListener
 
+/**
+ *  Activity基类，持有语音合成对象mTts和语音识别对象mIat，在此初始化参数
+ *  作为HelpDialogFragment两个Interface的实现类，但传给子类具体实现
+ *
+ */
 
 abstract class BaseActivity<T : ViewDataBinding>:AppCompatActivity(), HelpDialogFragment.NoticeDialogListener, HelpDialogFragment.DialogViewGetter{
 
     var mBinding:T? = null
     var TAG = "BaseActivity"
 
+    // 权限代码
+    private val REQUEST_CODE_CAMERA = 1001
+    private val REQUEST_CODE_RECORD_AUDIO = 1002
+
+    // 权限集合和权限代码集合
+    private val permissions:Array<String> = arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
+    private val permissionCodes:Array<Int> = arrayOf(REQUEST_CODE_CAMERA, REQUEST_CODE_RECORD_AUDIO)
+    private var checkPermission:Boolean = false
+
     val helpDialogFragment = HelpDialogFragment()
 
+    /**
+     *  设置语音识别相关对象和参数
+     */
     val initIatListener: InitListener = InitListener{
-       if(it!=ErrorCode.SUCCESS) ToastUtils.show("初始化失败，错误码：${it}")
+        if(it!=ErrorCode.SUCCESS) ToastUtils.show("初始化失败，错误码：${it}")
     }
-
-
     val mIat:SpeechRecognizer by lazy { SpeechRecognizer.createRecognizer(this, initIatListener) }
     private val mEngineType = SpeechConstant.TYPE_CLOUD
     private val mIatresultType = "json"
@@ -63,63 +86,7 @@ abstract class BaseActivity<T : ViewDataBinding>:AppCompatActivity(), HelpDialog
         }
     }
 
-
-    val initTtsListener: InitListener = InitListener{
-        if(it!=ErrorCode.SUCCESS) ToastUtils.show("初始化失败，错误码：${it}")
-    }
-    val mTts by lazy { SpeechSynthesizer.createSynthesizer(this, initIatListener) }
-    val speaker = "xiaoyan"
-
-
-
-    // 缓冲进度
-    private var mPercentForBuffering = 0
-    // 播放进度
-    private val mPercentForPlaying = 0
-    private val mTtsListener:SynthesizerListener = object :SynthesizerListener{
-        override fun onSpeakBegin() {
-           ToastUtils.show("语音播报命令")
-        }
-
-        override fun onBufferProgress(p0: Int, p1: Int, p2: Int, p3: String?) {
-
-        }
-
-        override fun onSpeakPaused() {
-
-        }
-
-        override fun onSpeakResumed() {
-
-        }
-
-
-        override fun onSpeakProgress(
-                percent: Int, beginPos: Int, endPos: Int,
-        ) {
-            mPercentForBuffering = percent
-
-        }
-
-        override fun onCompleted(p0: SpeechError?) {
-            ToastUtils.show("播报完毕")
-        }
-
-        override fun onEvent(eventType: Int, arg1: Int, arg2: Int, obj: Bundle?) {
-
-            //	 以下代码用于获取与云端的会话id，当业务出错时将会话id提供给技术支持人员，可用于查询会话日志，定位出错原因
-            //	 若使用本地能力，会话id为null
-            if (SpeechEvent.EVENT_SESSION_ID == eventType) {
-                val sid: String? = obj?.getString(SpeechEvent.KEY_EVENT_SESSION_ID)
-                Log.d(TAG, "session id =$sid")
-            }
-        }
-
-    }
-
-
     fun setIatParams(){
-
         mIat.setParameter(SpeechConstant.PARAMS, null)
         // 引擎类型
         mIat.setParameter(SpeechConstant.ENGINE_TYPE, mEngineType)
@@ -148,6 +115,59 @@ abstract class BaseActivity<T : ViewDataBinding>:AppCompatActivity(), HelpDialog
                 SpeechConstant.ASR_PTT,
                 iat_asr_ptt
         )
+    }
+
+    /**
+     *  设置语音合成相关对象和参数
+     */
+    val initTtsListener: InitListener = InitListener{
+        if(it!=ErrorCode.SUCCESS) ToastUtils.show("初始化失败，错误码：${it}")
+    }
+    val mTts by lazy { SpeechSynthesizer.createSynthesizer(this, initIatListener) }
+    val speaker = "xiaoyan"
+
+    // 缓冲进度
+    private var mPercentForBuffering = 0
+    // 播放进度
+    private val mPercentForPlaying = 0
+    private val mTtsListener:SynthesizerListener = object :SynthesizerListener{
+        override fun onSpeakBegin() {
+           ToastUtils.show("语音播报命令")
+        }
+
+        override fun onBufferProgress(p0: Int, p1: Int, p2: Int, p3: String?) {
+
+        }
+
+        override fun onSpeakPaused() {
+
+        }
+
+        override fun onSpeakResumed() {
+
+        }
+
+        override fun onSpeakProgress(
+                percent: Int, beginPos: Int, endPos: Int,
+        ) {
+            mPercentForBuffering = percent
+            showTtsProgress(beginPos, endPos)
+        }
+
+        override fun onCompleted(p0: SpeechError?) {
+            ToastUtils.show("播报完毕")
+        }
+
+        override fun onEvent(eventType: Int, arg1: Int, arg2: Int, obj: Bundle?) {
+
+            //	 以下代码用于获取与云端的会话id，当业务出错时将会话id提供给技术支持人员，可用于查询会话日志，定位出错原因
+            //	 若使用本地能力，会话id为null
+            if (SpeechEvent.EVENT_SESSION_ID == eventType) {
+                val sid: String? = obj?.getString(SpeechEvent.KEY_EVENT_SESSION_ID)
+                Log.d(TAG, "session id =$sid")
+            }
+        }
+
     }
 
     fun setTtsParams(){
@@ -188,7 +208,16 @@ abstract class BaseActivity<T : ViewDataBinding>:AppCompatActivity(), HelpDialog
 
     abstract fun getLayoutId():Int
 
-    abstract fun requestPermission()
+    abstract fun initTitle()
+
+    /**
+     * 开放函数，用于向子类传递语音合成的进度
+     * @param beginPos Int  当前读取部分的初位置
+     * @param endPos Int  当前读取部分的末位置
+     */
+    open fun showTtsProgress(beginPos:Int, endPos:Int){
+
+    }
 
     protected  open fun startListening(){
         setIatParams() // 每次都重新设置参数
@@ -214,5 +243,91 @@ abstract class BaseActivity<T : ViewDataBinding>:AppCompatActivity(), HelpDialog
         mIat.stopListening()
     }
 
+    protected fun pauseSpeaking(){
+        mTts.pauseSpeaking()
+    }
+
+    protected fun resumeSpeaking(){
+        mTts.resumeSpeaking()
+    }
+
+    /**
+     * 帮助弹窗取消按钮的监听
+     * @param dialog DialogFragment
+     */
+    override fun onDialogNegativeClick(dialog: DialogFragment) {
+        stopSpeaking()
+    }
+
+
+    fun requestPermission() {
+        for(i in 0..permissions.size-1){
+            when {
+                ContextCompat.checkSelfPermission(
+                    AppHelper.mContext,
+                    permissions[i]
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    if(i==permissions.size-1) executeAfrPermitted()
+                }
+                shouldShowRequestPermissionRationale("") -> {
+
+                }
+                else -> {
+                    requestPermissions(
+                        arrayOf(permissions[i]),
+                        permissionCodes[i]
+                    )
+                }
+            }
+        }
+
+    }
+
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>, grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            REQUEST_CODE_CAMERA -> {
+                // If request is cancelled, the result arrays are empty.
+                if ((grantResults.isNotEmpty() &&
+                            grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                ) {
+                    checkPermission = true
+                } else {
+                    ToastUtils.show("拒绝了授权")
+                }
+                return
+            }
+            REQUEST_CODE_RECORD_AUDIO -> {
+                if ((grantResults.isNotEmpty() &&
+                            grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                ) {
+                    if(checkPermission) executeAfrPermitted()
+                } else {
+                    ToastUtils.show("拒绝了授权")
+                }
+                return
+            }
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.common_menu,menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.item_markques->{
+                helpDialogFragment.show(supportFragmentManager,"base")
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    abstract fun executeAfrPermitted() // 权限获取之后必须调用重写的方法
 
 }

@@ -30,17 +30,11 @@ class LatActivity:BaseActivity<ActivityLatLayoutBinding>(){
 
     var helperText:String? = null
 
-    private val REQUEST_CODE_RECORD_AUDIO = 1002
-
     private val FIRST_TIME = 1
 
     private val SECONDE_TIME = 2
 
     private val switchLiveData:MutableLiveData<Int> = MutableLiveData<Int>(FIRST_TIME)
-
-    private val permissions:Array<String> = arrayOf( Manifest.permission.RECORD_AUDIO)
-
-    private val permissionCodes:Array<Int> = arrayOf(REQUEST_CODE_RECORD_AUDIO)
 
     private lateinit var timeFormat:String
 
@@ -54,6 +48,7 @@ class LatActivity:BaseActivity<ActivityLatLayoutBinding>(){
 
     override fun initData(savedInstanceState: Bundle?) {
         helpDialogFragment.show(supportFragmentManager, "lat")
+        initTitle()
         switchLiveData.observe(this,{
             when(it){
                 FIRST_TIME->{
@@ -115,46 +110,6 @@ class LatActivity:BaseActivity<ActivityLatLayoutBinding>(){
 
     override fun getLayoutId(): Int  = R.layout.activity_lat_layout
 
-    override fun requestPermission() {
-        val i = 0
-        when {
-            ContextCompat.checkSelfPermission(
-                    AppHelper.mContext,
-                    permissions[i]
-            ) == PackageManager.PERMISSION_GRANTED -> {
-
-            }
-            shouldShowRequestPermissionRationale("") -> {
-
-            }
-            else -> {
-                requestPermissions(
-                        arrayOf(permissions[i]),
-                        permissionCodes[i]
-                )
-            }
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-            requestCode: Int,
-            permissions: Array<String>, grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-
-            REQUEST_CODE_RECORD_AUDIO -> {
-                if ((grantResults.isNotEmpty() &&
-                                grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                ) {
-
-                } else {
-                    ToastUtils.show("拒绝了授权")
-                }
-                return
-            }
-        }
-    }
 
     override fun onDialogNegativeClick(dialog: DialogFragment) {
         stopSpeaking()
@@ -170,6 +125,9 @@ class LatActivity:BaseActivity<ActivityLatLayoutBinding>(){
         }
     }
 
+    /**
+     *   对第一次返回的值进行正则匹配
+     */
    fun encodeDate(){
         val editText = mBinding?.editContent?.text?.trim().toString()
         val p1:Pattern = Pattern.compile("(\\d{1,2})月(\\d{1,2})日")
@@ -185,6 +143,7 @@ class LatActivity:BaseActivity<ActivityLatLayoutBinding>(){
        var hour = ""
        var min = ""
        if(m1.find()){
+          // m1匹配成功，即日期格式为x月x日
           monthAndDay  = m1.group(0).apply {
                replace("月",":")
                replace("日","")
@@ -197,6 +156,7 @@ class LatActivity:BaseActivity<ActivityLatLayoutBinding>(){
                date = this.get(1)
            }
        }else{
+           // 日期为今天/明天/后天
            val dayOfMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
            Log.d(TAG, "$dayOfMonth")
            month = nowMonth.toString()
@@ -215,6 +175,7 @@ class LatActivity:BaseActivity<ActivityLatLayoutBinding>(){
            }
        }
        if(m2.find()){
+           // m2匹配成功，即时间格式为几点几分
            val timeCn = m2.group(0)
            timeCn.split(":").apply {
                hour = this.get(0)
@@ -224,6 +185,7 @@ class LatActivity:BaseActivity<ActivityLatLayoutBinding>(){
                }
            }
        }else{
+           // 匹配的时间为xx点整或者xx点半
            val p = Pattern.compile("(\\d{1,2})")
            val m = p.matcher(editText)
            if(m.find()) hour = m.group(0)
@@ -233,10 +195,22 @@ class LatActivity:BaseActivity<ActivityLatLayoutBinding>(){
            min = "00"
        }
        timeFormat = "$year-$month-$date $hour:$min:00"
-       time = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA).parse(timeFormat).time
-       if(editText.contains("重复")) isRepeat = true
+       time = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA).parse(timeFormat).time //获取Long的时间值
+       if(editText.contains("不")) isRepeat = false else true
    }
 
-    fun encodeReturn() = "$detail;$time;$timeFormat;$isRepeat"
+    fun encodeReturn() = "$detail;$time;$timeFormat;$isRepeat" // 结果字符串格式，在Schedule中方便直接用split方法提取内容
+
+    override fun initTitle() {
+        mBinding?.toolbarLat?.apply {
+            tvTitle.text = "语音添加"
+            setSupportActionBar(toolbar)
+            toolbar.inflateMenu(R.menu.common_menu)
+        }
+    }
+
+    override fun executeAfrPermitted() {
+
+    }
 
 }

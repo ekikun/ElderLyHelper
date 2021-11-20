@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">textocr</string>
     <string name="helper_text_textreader">
-
+        $请使用语音控制:%
+        打开识别相机请说：识别%
+        停止播放请说：停止播放%
+        暂停播放请说：暂停播放%
+        恢复播放请说：继续播放%
+        返回主菜单请说：返回
     </string>
 </resources>

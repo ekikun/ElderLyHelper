@@ -10,13 +10,26 @@ import com.baidu.ocr.sdk.model.AccessToken
 import com.eki.common.utils.AppHelper
 import com.iflytek.cloud.SpeechConstant
 import com.iflytek.cloud.SpeechUtility
+import com.tencent.mmkv.MMKV
 
 class MainApp:Application(){
 
     private val TAG  = "APPLICATION"
 
+    val kv by lazy { MMKV.defaultMMKV() }
+
     override fun onCreate(){
         super.onCreate()
+        initMMKV()
+        if(!kv.containsKey("XUNFEIKEY")){
+            kv.encode("XUNFEIKEY","=eb45d932")
+        }
+        if(!kv.containsKey("BAIDU_AK")){
+            kv.encode("BAIDU_AK","qrPisDYU6Y5nKyvLddzoufgB")
+        }
+        if(!kv.containsKey("BAIDU_SK")){
+            kv.encode("BAIDU_SK","twFjH6l69lMvyBYFpHbv4NZ7eV2NGC76")
+        }
         initOcrSdk()
         initXunfeiSdk()
         initArouter()
@@ -39,7 +52,7 @@ class MainApp:Application(){
     }
 
     fun initXunfeiSdk(){
-        SpeechUtility.createUtility(this.applicationContext, SpeechConstant.APPID +"=eb45d932")
+        SpeechUtility.createUtility(this.applicationContext, SpeechConstant.APPID +kv.decodeString("XUNFEIKEY"))
     }
 
     fun initArouter(){
@@ -47,4 +60,9 @@ class MainApp:Application(){
         ARouter.openDebug()
         ARouter.init(this)
     }
+
+    fun initMMKV(){
+        MMKV.initialize(this.applicationContext)
+    }
+
 }

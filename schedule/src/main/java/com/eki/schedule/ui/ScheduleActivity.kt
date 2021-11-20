@@ -12,7 +12,6 @@ import android.widget.TextView
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -38,7 +37,7 @@ import kotlin.random.Random
 
 @InternalCoroutinesApi
 @Route(path = Constant.ROUTER_SCHEDULE)
-class  ScheduleActivity:BaseActivity<ActivityScheduleBinding>(),EditBottomDialog.setListener,HelpDialogFragment.NoticeDialogListener,
+class  ScheduleActivity:BaseActivity<ActivityScheduleBinding>(),EditBottomDialog.editListener,HelpDialogFragment.NoticeDialogListener,
         RvScheduleAdapter.RvAdapterListener{
 
     private var addDialog:EditBottomDialog?=null
@@ -69,8 +68,10 @@ class  ScheduleActivity:BaseActivity<ActivityScheduleBinding>(),EditBottomDialog
     }
 
     override fun initData(savedInstanceState: Bundle?) {
+        initTitle()
         helpDialogFragment.show(supportFragmentManager, "helper")
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN) // 设置默认键盘不弹出
+
         mBinding?.run {
             btnAddSchedule.setOnClickListener {
                 addDialog = EditBottomDialog(this@ScheduleActivity)
@@ -82,14 +83,15 @@ class  ScheduleActivity:BaseActivity<ActivityScheduleBinding>(),EditBottomDialog
             }
             btnControlSch.setOnClickListener {
                 if(isDeleteMode.value!!){
-                    lifecycleScope.launch(Dispatchers.Main){
+                    // 删除是耗时的，在协程中进行
+                    lifecycleScope.launch(){
                         withContext(this.coroutineContext){
                             for(i in rvAdapter.itemCount-1 downTo  0){
                                 if(rvAdapter.mScheduleList?.get(i)?.is2Delete!!){
                                     Log.d(TAG, "remove at $i")
-                                    rvAdapter.mScheduleList?.removeAt(i)
-                                    rvAdapter.notifyItemRemoved(i)
-                                    rvAdapter.notifyItemRangeChanged(i, rvAdapter.itemCount-i)
+                                    rvAdapter.mScheduleList?.removeAt(i) // 列表中删除
+                                    rvAdapter.notifyItemRemoved(i) // 通知该位置被删除
+                                    rvAdapter.notifyItemRangeChanged(i, rvAdapter.itemCount-i)  // 通知被删除元素下的所有元素前移，修改position
                                 }
                             }
                         }
@@ -103,6 +105,7 @@ class  ScheduleActivity:BaseActivity<ActivityScheduleBinding>(),EditBottomDialog
                         }
                         isDeleteMode.postValue(false)
                     }
+
                 }else{
                     startListening()
                 }
@@ -113,12 +116,14 @@ class  ScheduleActivity:BaseActivity<ActivityScheduleBinding>(),EditBottomDialog
             toolbarSchedule.tvTitle.text = "小秘书"
 
         }
+
         mViewModel.setContext(this)
+        //异步协程，向数据库请求数据
         lifecycleScope.launch {
-            Log.d(TAG, "Read to get data from db")
             val data = async {  mViewModel.getData() }
-            rvAdapter.setData(data.await()?: mutableListOf())
-            Log.d(TAG, "Get data sucecssfully, dataSize: ${rvAdapter.mScheduleList?.size}")
+            val list  = data.await()?: mutableListOf()
+            list.reverse()
+            rvAdapter.setData(list)
             rvAdapter.notifyDataSetChanged()
         }
         isDeleteMode.observe(this, {
@@ -135,9 +140,6 @@ class  ScheduleActivity:BaseActivity<ActivityScheduleBinding>(),EditBottomDialog
                 mBinding?.toolbarSchedule?.tvTitle?.text = "小秘书"
             }
         })
-        rvAdapter.isSelectMode.observe(this, {
-
-        })
         rvAdapter.setOnItemClickedListener(this)
     }
 
@@ -148,16 +150,17 @@ class  ScheduleActivity:BaseActivity<ActivityScheduleBinding>(),EditBottomDialog
             startForAdd()
         }else if(text.contains("删除")){
             val tips = "无效删除，请重新说"
-            val p = Pattern.compile("(\\d{1,3})")
+            val p = Pattern.compile("(\\d{1,3})") // 从内容中匹配出删除的位置
             val m = p.matcher(text)
             if(m.find()){
                 var dPos = m.group(0).toInt()
                 Log.d(TAG, "Now len ${rvAdapter.itemCount}")
+                // 如果用户提供的位置超过列表长，则无效
                 if(dPos>rvAdapter.itemCount){
                     ToastUtils.show(tips)
                     startSpeaking(tips)
                 }else{
-                    dPos -= 1
+                    dPos -= 1 // 列表从0开始，而用户命令从1开始
                     val item = rvAdapter.mScheduleList?.get(dPos)
                     rvAdapter.mScheduleList?.removeAt(dPos)
                     rvAdapter.notifyItemRemoved(dPos)
@@ -176,13 +179,6 @@ class  ScheduleActivity:BaseActivity<ActivityScheduleBinding>(),EditBottomDialog
 
     override fun getLayoutId() = R.layout.activity_schedule
 
-    override fun requestPermission(){
-
-    }
-
-    override fun onDialogNegativeClick(dialog: DialogFragment) {
-
-    }
 
     override fun getDialogView(): View {
         return layoutInflater.inflate(R.layout.helperdialog_layout,null).apply {
@@ -194,6 +190,10 @@ class  ScheduleActivity:BaseActivity<ActivityScheduleBinding>(),EditBottomDialog
         }
     }
 
+    /**
+     * 获取日期选择弹窗
+     * @param time MutableLiveData<Long> 在EditBottomDialogFragment中监听，在此处更改
+     */
     override fun setTime(time:MutableLiveData<Long>){
         CardDatePickerDialog.builder(this)
             .setTitle("选择时间")
@@ -216,6 +216,10 @@ class  ScheduleActivity:BaseActivity<ActivityScheduleBinding>(),EditBottomDialog
         addDialog?.dismiss()
     }
 
+    /**
+     * 根据日程实例构建闹钟，每个闹钟的id随机生成，id生成后将保存到日程实例中，删除时提供相同的id才会正确删除
+     * @param scheduleEntity ScheduleEntity
+     */
     fun buildAlarm(scheduleEntity: ScheduleEntity){
         val requestCode = Random.nextInt(0, Int.MAX_VALUE)
         val alarmIntent = Intent(this, AlarmReciver::class.java).let { intent ->
@@ -283,6 +287,10 @@ class  ScheduleActivity:BaseActivity<ActivityScheduleBinding>(),EditBottomDialog
         alarmManager.cancel(alarmIntent)
     }
 
+    /**
+     * 添加分为两部分，向列表添加（头插），和向数据库添加
+     * @param scheduleEntity ScheduleEntity
+     */
     fun addScheduleEntity(scheduleEntity: ScheduleEntity){
         buildAlarm(scheduleEntity)
         rvAdapter.addData(scheduleEntity)
@@ -293,6 +301,10 @@ class  ScheduleActivity:BaseActivity<ActivityScheduleBinding>(),EditBottomDialog
         mViewModel.addSchedule(scheduleEntity)
     }
 
+    /**
+     * 编辑也一样两部分，通知列表数据更新，然后向数据库更新
+     * @param scheduleEntity ScheduleEntity
+     */
     fun editScheduleEntity(scheduleEntity: ScheduleEntity){
         if(updatePos==-1) return
         buildAlarm(scheduleEntity)
@@ -301,10 +313,24 @@ class  ScheduleActivity:BaseActivity<ActivityScheduleBinding>(),EditBottomDialog
         mViewModel.updateSchedule(scheduleEntity)
     }
 
+    /**
+     * 打开语音添加界面
+     */
     fun startForAdd(){
         val intent = Intent(this,LatActivity::class.java)
         startForResult.launch(intent)
     }
 
+    override fun executeAfrPermitted(){
+        Log.d(TAG, "permission access")
+    }
+
+    override fun initTitle() {
+        mBinding?.toolbarSchedule?.apply {
+            tvTitle.text = "小秘书"
+            setSupportActionBar(toolbar)
+            toolbar.inflateMenu(R.menu.common_menu)
+        }
+    }
 
 }

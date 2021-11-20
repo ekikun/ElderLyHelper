@@ -62,7 +62,7 @@ class AlarmReciver:BroadcastReceiver() {
                 val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
 
                 }
-                // Register the channel with the system
+                // 利用当前渠道注册通知
                 val notificationManager: NotificationManager =
                    mContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 notificationManager.createNotificationChannel(channel)
