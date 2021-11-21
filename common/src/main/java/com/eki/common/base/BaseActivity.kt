@@ -10,6 +10,7 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.DialogFragment
@@ -21,6 +22,8 @@ import com.eki.common.widget.HelpDialogFragment
 import com.iflytek.cloud.*
 import com.iflytek.cloud.ui.RecognizerDialog
 import com.iflytek.cloud.ui.RecognizerDialogListener
+
+
 
 /**
  *  Activity基类，持有语音合成对象mTts和语音识别对象mIat，在此初始化参数
@@ -54,8 +57,8 @@ abstract class BaseActivity<T : ViewDataBinding>:AppCompatActivity(), HelpDialog
     private val mEngineType = SpeechConstant.TYPE_CLOUD
     private val mIatresultType = "json"
     private val mIatlanguageType = "zh_cn"
-    private val iat_vad_bos = "20003"
-    private val iat_vad_eos = "800"
+    private val iat_vad_bos = "4000"
+    private val iat_vad_eos = "500"
     private val iat_asr_ptt = "0"
     val mIatRecognizerListener: RecognizerListener = object:RecognizerListener{
         override fun onVolumeChanged(p0: Int, p1: ByteArray?) {
@@ -197,9 +200,31 @@ abstract class BaseActivity<T : ViewDataBinding>:AppCompatActivity(), HelpDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.setStatusBarColor(getColor(R.color.white))
+        // 修改状态栏字体颜色，用AndroidX官方兼容API
+        val wic = ViewCompat.getWindowInsetsController(getWindow().getDecorView());
+        if (wic != null) {
+            // true表示Light Mode，状态栏字体呈黑色，反之呈白色
+            wic.setAppearanceLightStatusBars(false);
+        }
+        window.setStatusBarColor(getColor(R.color.aliceblue))
         mBinding =  DataBindingUtil.setContentView(this, getLayoutId())
         initData(savedInstanceState)
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+        resumeSpeaking()
+    }
+
+    override fun onPause(){
+        super.onPause()
+        pauseSpeaking()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopSpeaking()
     }
 
     abstract fun initData(savedInstanceState: Bundle?)

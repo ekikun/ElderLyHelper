@@ -205,6 +205,9 @@ class MagnifierActivity : BaseActivity<ActivityMagnifierBinding>() {
             toolbarMagnifier.tvTitle.text = "放大镜"
             setSupportActionBar(toolbarMagnifier.toolbar)
             toolbarMagnifier.toolbar.inflateMenu(R.menu.common_menu)
+            toolbarMagnifier.ivBack.setOnClickListener {
+                finish()
+            }
         }
     }
 }

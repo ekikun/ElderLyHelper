@@ -62,7 +62,8 @@ class TextReaderActivity: BaseActivity<ActivityTextreaderBinding>() {
         helpDialogFragment.show(supportFragmentManager,"OCR")
         initAccessTokenWithAkSk()
         mBinding?.run {
-            tvOcr.text = kv.decodeString(Constant.LAST_SAVE)
+            ocrTexts = kv.decodeString(Constant.LAST_SAVE)
+            tvOcr.text = ocrTexts
             btnOcr.setOnClickListener {
                if(checkTokenStatus()){
                   startOcr()
@@ -220,6 +221,9 @@ class TextReaderActivity: BaseActivity<ActivityTextreaderBinding>() {
             tvTitle.text = "扫描阅读"
             setSupportActionBar(toolbar)
             toolbar.inflateMenu(R.menu.common_menu)
+            ivBack.setOnClickListener {
+                finish()
+            }
         }
     }
 }

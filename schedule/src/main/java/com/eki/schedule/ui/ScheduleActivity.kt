@@ -170,10 +170,17 @@ class  ScheduleActivity:BaseActivity<ActivityScheduleBinding>(),EditBottomDialog
                         mViewModel.deleteSchedule(item.timestamp)
                     }
                 }
-            }else{
+            }
+            else{
                 ToastUtils.show(tips)
                 startSpeaking(tips)
             }
+        }else if(text.contains("返回")){
+            finish()
+        }
+        else {
+            ToastUtils.show("请重新读命令")
+            startSpeaking("请重新读命令")
         }
     }
 
@@ -330,6 +337,9 @@ class  ScheduleActivity:BaseActivity<ActivityScheduleBinding>(),EditBottomDialog
             tvTitle.text = "小秘书"
             setSupportActionBar(toolbar)
             toolbar.inflateMenu(R.menu.common_menu)
+            ivBack.setOnClickListener {
+                finish()
+            }
         }
     }
 

@@ -206,6 +206,9 @@ class LatActivity:BaseActivity<ActivityLatLayoutBinding>(){
             tvTitle.text = "语音添加"
             setSupportActionBar(toolbar)
             toolbar.inflateMenu(R.menu.common_menu)
+            ivBack.setOnClickListener {
+                finish()
+            }
         }
     }
 

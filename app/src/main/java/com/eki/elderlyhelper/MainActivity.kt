@@ -33,7 +33,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>(),MainAdapter.setonClicke
         setData()
         mainAdapter.getData(dataList)
         mainAdapter.notifyDataSetChanged()
-        window.setStatusBarColor(getColor(com.eki.common.R.color.white))
         requestPermission()
         helpDialogFragment.show(supportFragmentManager, "main")
         mBinding?.run {
@@ -136,6 +135,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(),MainAdapter.setonClicke
             tvTitle.text = "长者小帮手"
             setSupportActionBar(toolbar)
             toolbar.inflateMenu(R.menu.common_menu)
+
         }
     }
 }

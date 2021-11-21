@@ -108,6 +108,7 @@ class RvScheduleAdapter(context:Context): RecyclerView.Adapter<RecyclerView.View
                         deleteMap.put(position, item!!)
                         Log.d("Adapter", "item: ${item?.detail} ready to delete, in position${position}")
                     }else{
+                        item?.is2Delete = false
                         if(deleteMap.containsKey(key = item?.timestamp!!)){
                             deleteMap.remove(item?.timestamp!!)
                             Log.d("Adapter", "item: ${item?.detail} cancel delete, in position${position}")
